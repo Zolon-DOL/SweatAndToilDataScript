@@ -27,7 +27,7 @@ def country_profiles(country, row):
     description = row[4]
 
     ET.SubElement(country, "Advancement_Level").text = advancement_lvl
-    ET.SubElement(country, "Description").text = description
+    ET.SubElement(country, "Description").text = description.strip()
 
 
 def statistics_on_children(country, row):
@@ -64,10 +64,8 @@ def statistics_on_children(country, row):
                 stats, "Education_Statistics_Attendance_Statistics")
 
         ET.SubElement(education, "Age_Range").text = age
-
-        if match:
-            ET.SubElement(
-                education, "Percentage").text = match.group(1)
+        ET.SubElement(
+            education, "Percentage").text = match.group(1) if match else ""
     elif stat_type == "Combining Work and School (%)":
         work_and_school = stats.find(
             "Children_Working_and_Studying_7-14_yrs_old")
@@ -76,10 +74,8 @@ def statistics_on_children(country, row):
                 stats, "Children_Working_and_Studying_7-14_yrs_old")
 
         ET.SubElement(work_and_school, "Age_Range").text = age
-
-        if match:
-            ET.SubElement(
-                work_and_school, "Total").text = match.group(1)
+        ET.SubElement(
+            work_and_school, "Total").text = match.group(1) if match else ""
     elif stat_type == "Primary Completion Rate (%)":
         completion_rate = stats.find(
             "UNESCO_Primary_Completion_Rate")
@@ -90,11 +86,34 @@ def statistics_on_children(country, row):
                 completion_rate, "Rate").text = match.group(1) if match else ""
 
 
+def ratification_of_international(country, row):
+    conventions = country.find("Conventions")
+    if conventions == None:
+        conventions = ET.SubElement(country, "Conventions")
+
+    convention = row[2]
+    ratification = row[3]
+
+    tags = {"ILO C. 138, Minimum Age": "C_138_Ratified", "UN CRC": "Convention_on_the_Rights_of_the_Child_Ratified",
+            "ILO C. 182, Worst Forms of Child Labor": "C_182_Ratified",
+            "UN CRC Optional Protocol on the Sale of Children, Child Prostitution and Child Pornography": "CRC_Commercial_Sexual_Exploitation_of_Children_Ratified",
+            "UN CRC Optional Protocol on Armed Conflict": "CRC_Armed_Conflict_Ratified",
+            "Palermo Protocol on Trafficking in Persons": "Palermo_Ratified"}
+
+    if ratification == "1":
+        ratification = "Yes"
+    elif ratification == "0":
+        ratification = "No"
+    if convention:
+        ET.SubElement(conventions, tags[convention]).text = ratification
+
+
 def read_row(country, row, ws_idx):
-    if ws_idx == 1:
-        country_profiles(country, row)
-    elif ws_idx == 2:
-        statistics_on_children(country, row)
+    options = {1: country_profiles,
+               2: statistics_on_children,
+               3: ratification_of_international}
+    if ws_idx >= 1 and ws_idx <= len(options):
+        options[ws_idx](country, row)
 
 
 for idx, sheet in enumerate(wb.sheetnames):
@@ -112,4 +131,9 @@ for idx, sheet in enumerate(wb.sheetnames):
         read_row(country, row, idx)
 
 
+def getkey(elem):
+    return elem.findtext("Name")
+
+
+countries[:] = sorted(countries, key=getkey)
 countries_tree.write(COUNTRIES_OUTPUT_FILE)
