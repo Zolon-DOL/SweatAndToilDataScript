@@ -116,6 +116,10 @@ def read_row(country, row, ws_idx):
         options[ws_idx](country, row)
 
 
+def getkey(elem):
+    return elem.findtext("Name")
+
+
 for idx, sheet in enumerate(wb.sheetnames):
     if sheet == "Instructions":
         continue
@@ -129,10 +133,6 @@ for idx, sheet in enumerate(wb.sheetnames):
             name.text = country_name
 
         read_row(country, row, idx)
-
-
-def getkey(elem):
-    return elem.findtext("Name")
 
 
 countries[:] = sorted(countries, key=getkey)
