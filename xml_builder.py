@@ -134,7 +134,7 @@ def laws_and_regulations(country, row):
             "Prohibition of Using Children in Illicit Activities": "Prohibition_Illicit_Activities"
         }
 
-    if standard:
+    if standard and tags[standard]:
         tag = ET.SubElement(legal, tags[standard])
         ET.SubElement(tag, "Standard") # TODO get clarification about this tag
         ET.SubElement(tag, "Age").text = age
@@ -142,11 +142,65 @@ def laws_and_regulations(country, row):
         ET.SubElement(tag, "Conforms_To_Intl_Standard").text = meets_intl_stds
 
 
+def labor_law_enforcement(country, row):
+    enforcements = country.find("Enforcements")
+    if enforcements == None:
+        enforcements = ET.SubElement(country, "Enforcements")
+
+    overview = row[2]
+    sub_overview = row[3]
+    current_year_data = row[4]
+
+    tags = {
+        "Labor Inspectorate Funding":"Labor_Funding",
+        "Number of Labor Inspectors":"Labor_Inspectors",
+        "Inspectorate Authorized to Assess Penalties":"Authorized_Access_Penalties",
+        "Initial Training for New Labor Inspectors":
+            {"NA": "Labor_New_Employee_Training", 
+            "Training on New Laws Related to Child Labor": "Labor_New_Law_Training",
+            "Refresher Courses Provided": "Labor_Refresher_Courses"},
+        "Number of Labor Inspections Conducted":
+            {"NA": "Labor_Inspections", 
+            "Number Conducted at Worksite": "Labor_Worksite_Inspections"},
+        "Number of Child Labor Violations Found":
+            {"NA": "Labor_Violations", 
+            "Number of Child Labor Violations for Which Penalties Were Imposed": "Labor_Penalties_Imposed",
+            "Number of Child Labor Penalties Imposed that Were Collected": "Labor_Penalties_Collected"},
+        "Routine Inspections Conducted":
+            {"NA": "Labor_Routine_Inspections_Conducted", 
+            "Routine Inspections Targeted": "Labor_Routine_Inspections_Targeted"},
+        "Unannounced Inspections Permitted":
+            {"NA": "Labor_Unannounced_Inspections_Premitted", 
+            "Unannounced Inspections Conducted": "Labor_Unannounced_Inspections_Conducted"},
+        "Complaint Mechanism Exists":"Labor_Complaint_Mechanism",
+        "Reciprocal Referral Mechanism Exists Between Labor Authorities and Social Services":"Labor_Referral_Mechanism"
+    }
+
+    if overview:
+        if isinstance(tags[overview], dict):
+            if not sub_overview:
+                sub_overview = "NA"
+            ET.SubElement(enforcements, tags[overview][sub_overview]).text = current_year_data
+        else:
+            ET.SubElement(enforcements, tags[overview]).text = current_year_data
+
+
+def criminal_law_enforcement(country, row):
+    enforcements = country.find("Enforcements")
+    if enforcements == None:
+        enforcements = ET.SubElement(country, "Enforcements")
+
+    tags = {
+        "":""
+    }
+
 def read_row(country, row, ws_idx):
     options = {1: country_profiles,
                2: statistics_on_children,
                3: ratification_of_international,
-               4: laws_and_regulations}
+               4: laws_and_regulations,
+               5: labor_law_enforcement,
+               6: criminal_law_enforcement}
     if ws_idx >= 1 and ws_idx <= len(options):
         options[ws_idx](country, row)
 
