@@ -108,16 +108,67 @@ def ratification_of_international(country, row):
         ET.SubElement(conventions, tags[convention]).text = ratification
 
 
+def laws_and_regulations(country, row):
+    legal = country.find("Legal_Standards")
+    if legal == None:
+        legal = ET.SubElement(country, "Legal_Standards")
+    
+    standard = row[2]
+    meets_intl_stds = row[4]
+    age = row[6]
+    calced_age = "Yes" if row[7] == "TRUE" else "No"
+
+    tags = {
+            "Compulsory Education Age": "Compulsory_Education",
+            "Free Public Education": "Free_Public_Education",
+            "Identification of Hazardous Occupations or Activities Prohibited for Children": "Types_Hazardous_Work",
+            "Minimum Age for Hazardous Work": "Minimum_Hazardous_Work",
+            "Minimum Age for Voluntary State Military Recruitment": "Minumum_Voluntary_Military",
+            "Minimum Age for Work": "Minimum_Work",
+            "Prohibition of Child Trafficking": "Prohibition_Child_Trafficking",
+            "Prohibition of Commercial Sexual Exploitation of Children": "Prohibition_CSEC",
+            "Prohibition of Compulsory Recruitment of Children by (State) Military": "",
+            "Prohibition of Forced Labor": "Prohibition_Forced_Labor",
+            "Prohibition of Military Recruitment": "",
+            "Prohibition of Military Recruitment by Non-state Armed Groups": "",
+            "Prohibition of Using Children in Illicit Activities": "Prohibition_Illicit_Activities"
+        }
+
+    if standard:
+        tag = ET.SubElement(legal, tags[standard])
+        ET.SubElement(tag, "Standard") # TODO get clarification about this tag
+        ET.SubElement(tag, "Age").text = age
+        ET.SubElement(tag, "Calculated_Age").text = calced_age
+        ET.SubElement(tag, "Conforms_To_Intl_Standard").text = meets_intl_stds
+
+
 def read_row(country, row, ws_idx):
     options = {1: country_profiles,
                2: statistics_on_children,
-               3: ratification_of_international}
+               3: ratification_of_international,
+               4: laws_and_regulations}
     if ws_idx >= 1 and ws_idx <= len(options):
         options[ws_idx](country, row)
 
 
 def getkey(elem):
     return elem.findtext("Name")
+
+
+def indent(elem, level=0):
+    i = "\n" + level*"  "
+    if len(elem):
+        if not elem.text or not elem.text.strip():
+            elem.text = i + "  "
+        if not elem.tail or not elem.tail.strip():
+            elem.tail = i
+        for elem in elem:
+            indent(elem, level+1)
+        if not elem.tail or not elem.tail.strip():
+            elem.tail = i
+    else:
+        if level and (not elem.tail or not elem.tail.strip()):
+            elem.tail = i
 
 
 for idx, sheet in enumerate(wb.sheetnames):
@@ -136,4 +187,5 @@ for idx, sheet in enumerate(wb.sheetnames):
 
 
 countries[:] = sorted(countries, key=getkey)
+indent(countries)
 countries_tree.write(COUNTRIES_OUTPUT_FILE)
