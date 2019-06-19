@@ -190,9 +190,29 @@ def criminal_law_enforcement(country, row):
     if enforcements == None:
         enforcements = ET.SubElement(country, "Enforcements")
 
+    overview = row[2]
+    sub_overview = row[3]
+    current_year_data = row[4]
+
     tags = {
-        "":""
+        "Number of Investigations":"Criminal_Investigations",
+        "Number of Violations Found":"Criminal_Violations",
+        "Number of Prosecutions Initiated":"Criminal_Prosecutions",
+        "Number of Convictions":"Criminal_Convictions",
+        "Initial Training for New Criminal Investigators":
+            {"NA": "Criminal_New_Employee_Training", 
+            "Training on New Laws Related to the Worst Forms of Child Labor": "Criminal_New_Law_Training",
+            "Refresher Courses Provided": "Criminal_Refresher_Courses"},
+        "Reciprocal Referral Mechanism Exists Between Criminal Authorities and Social Services":"Criminal_Referral_Mechanism"
     }
+
+    if overview and overview in tags:
+        if isinstance(tags[overview], dict):
+            if not sub_overview:
+                sub_overview = "NA"
+            ET.SubElement(enforcements, tags[overview][sub_overview]).text = current_year_data
+        else:
+            ET.SubElement(enforcements, tags[overview]).text = current_year_data
 
 def read_row(country, row, ws_idx):
     options = {1: country_profiles,
