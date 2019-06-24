@@ -54,7 +54,7 @@ def statistics_on_children(country, row):
                 child_work, "Total_Percentage_of_Working_Children").text = match.group(1) if match else ""
             ET.SubElement(
                 child_work, "Total_Working_Population").text = match.group(6) if match else ""
-        elif stat_type == "Working children by sector":
+        elif stat_type == "Working children by sector" and sector:
             ET.SubElement(child_work, sector).text = match.group(
                 1) if match else ""
     elif stat_type == "Attending School (%)":
@@ -214,13 +214,39 @@ def criminal_law_enforcement(country, row):
         else:
             ET.SubElement(enforcements, tags[overview]).text = current_year_data
 
+def government_actions(country, row):
+    actions = country.find("Suggested_Actions")
+    if actions == None:
+        actions = ET.SubElement(country, "Suggested_Actions")
+
+    area = row[2]
+    action = row[3]
+
+    tags = {
+        "Legal Framework":"Legal_Framework",
+        "Enforcement":"Enforcement",
+        "Coordination":"Coordination",
+        "Government Policies":"Government_Policies",
+        "Social Programs":"Social_Programs"
+    }
+
+    if area and action:
+        tag = actions.find(tags[area])
+        if tag == None:
+            tag = ET.SubElement(actions, tags[area])
+        
+        action_tag = ET.SubElement(tag, "Action")
+        ET.SubElement(action_tag, "Name").text = action.strip()
+
+
 def read_row(country, row, ws_idx):
     options = {1: country_profiles,
                2: statistics_on_children,
                3: ratification_of_international,
                4: laws_and_regulations,
                5: labor_law_enforcement,
-               6: criminal_law_enforcement}
+               6: criminal_law_enforcement,
+               7: government_actions}
     if ws_idx >= 1 and ws_idx <= len(options):
         options[ws_idx](country, row)
 
