@@ -21,6 +21,15 @@ def country_exists(country_name):
             return country
     return None
 
+def check_multiple_territories(country, related_entity):
+    territories = country.find("Multiple_Territories")
+    if territories == None:
+        territories = ET.SubElement(country, "Multiple_Territories")
+
+    if related_entity:
+        territories.text = "Yes"
+    else:
+        territories.text = "No"
 
 def country_profiles(country, row):
     advancement_lvl = row[2]
@@ -41,7 +50,10 @@ def statistics_on_children(country, row):
     sector = row[3]
     age = row[4]
     percent = row[5]
+    related_entity = row[6]
     match = re.match(regex, str(percent))
+
+    check_multiple_territories(country, related_entity)
 
     if stat_type == "Working (% and population)" or stat_type == "Working children by sector":
         child_work = stats.find("Children_Work_Statistics")
@@ -239,6 +251,23 @@ def government_actions(country, row):
         ET.SubElement(action_tag, "Name").text = action.strip()
 
 
+def deliberative_data(country, row):
+    mechanisms = country.find("Mechanisms")
+    if mechanisms == None:
+        mechanisms = ET.SubElement(country, "Mechanisms")
+
+    yes_no_na = row[2]
+    program = row[3]
+
+    tags = {
+        "Does the government have a program to combat child labor?":"Program",
+        "Does the government have a policy to combat child labor?":"Policy",
+        "Does the government have a mechanism to coordinate efforts against CL?":"Coordination"
+    }
+
+    if program:
+        ET.SubElement(mechanisms, tags[program]).text = yes_no_na
+
 def read_row(country, row, ws_idx):
     options = {1: country_profiles,
                2: statistics_on_children,
@@ -246,7 +275,8 @@ def read_row(country, row, ws_idx):
                4: laws_and_regulations,
                5: labor_law_enforcement,
                6: criminal_law_enforcement,
-               7: government_actions}
+               7: government_actions,
+               8: deliberative_data}
     if ws_idx >= 1 and ws_idx <= len(options):
         options[ws_idx](country, row)
 
