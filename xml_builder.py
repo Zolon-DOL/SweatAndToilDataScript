@@ -65,19 +65,29 @@ def goods_list(country, row):
         ET.SubElement(goodTag, "Forced_Child_Labor").text = forced_child_labor
 
         # goods.xml
-        # print("find")
-        # goodTag = goods.find('.//Good/Name[text="' + good + '"')
-        # if goodTag == None:
-        #     goodTag = ET.SubElement(goods, "Good")
-        #     ET.SubElement(goodTag, "Good_Name").text = good
-        #     ET.SubElement(goodTag, "Good_Sector").text = good
-        # else:
-        #     print("good tag is not none")
+        goodTag = None
+        for val in goods.findall("Good"):
+            name = val.find("Good_Name")
+            if name.text == good:
+                goodTag = val
+                break
+        
+        if goodTag == None:
+            goodTag = ET.SubElement(goods, "Good")
+            ET.SubElement(goodTag, "Good_Name").text = good
+            ET.SubElement(goodTag, "Good_Sector").text = sector
 
-        # countriesTag = ET.SubElement(goodTag, )
-        # ET.SubElement(goodTag, "Child_Labor").text = child_labor
-        # ET.SubElement(goodTag, "Forced_Labor").text = forced_labor
-        # ET.SubElement(goodTag, "Forced_Child_Labor").text = forced_child_labor
+        countriesTag = goodTag.find("Countries")
+        if countriesTag == None:
+            countriesTag = ET.SubElement(goodTag, "Countries")
+        countryTag = ET.SubElement(countriesTag, "Country")
+        countryName = country.find("Name")
+        countryRegion = country.find("Region")
+        ET.SubElement(countryTag, "Country_Name").text = countryName.text if not countryName == None else ""
+        ET.SubElement(countryTag, "Country_Region").text = countryRegion.text if not countryRegion == None else ""
+        ET.SubElement(countryTag, "Child_Labor").text = child_labor
+        ET.SubElement(countryTag, "Forced_Labor").text = forced_labor
+        ET.SubElement(countryTag, "Forced_Child_Labor").text = forced_child_labor
         
 
 
@@ -324,8 +334,11 @@ def read_row(country, row, ws_idx):
         options[ws_idx](country, row)
 
 
-def getkey(elem):
+def get_countries_key(elem):
     return elem.findtext("Name")
+
+def get_goods_key(elem):
+    return elem.findtext("Good_Name")
 
 
 def indent(elem, level=0):
@@ -362,10 +375,10 @@ for idx, sheet in enumerate(wb.sheetnames):
         read_row(country, row, idx)
 
 
-countries[:] = sorted(countries, key=getkey)
+countries[:] = sorted(countries, key=get_countries_key)
 indent(countries)
 countries_tree.write(COUNTRIES_OUTPUT_FILE)
 
-goods[:] = sorted(goods, key=getkey)
+goods[:] = sorted(goods, key=get_goods_key)
 indent(goods)
 goods_tree.write(GOODS_OUTPUT_FILE)
