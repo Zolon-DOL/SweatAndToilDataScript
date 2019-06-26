@@ -43,16 +43,15 @@ def country_profiles(country, row):
 
 def goods_list(country, row):
     good = row[2]
-    child_labor = "Yes" if row[3] == "1" else "No"
-    forced_labor = "Yes" if row[4] == "1" else "No"
-    forced_child_labor = "Yes" if row[5] == "1" else "No"
+    child_labor = "Yes" if row[3] == 1 else "No"
+    forced_labor = "Yes" if row[4] == 1 else "No"
+    forced_child_labor = "Yes" if row[5] == 1 else "No"
 
     sectors = { "manu": "Manufacturing",
                 "mine": "Mining",
                 "agri": "Agriculture",
                 "other": "Other"}
     sector = sectors[row[6]] if row[6] in sectors else ""
-
     if sector:
         # countries.xml
         goodsTag = country.find("Goods")
@@ -66,11 +65,14 @@ def goods_list(country, row):
         ET.SubElement(goodTag, "Forced_Child_Labor").text = forced_child_labor
 
         # goods.xml
-        goodTag = goods.find('.//Good/Name[text="' + good + '"')
-        if goodTag == None:
-            goodTag = ET.SubElement(goods, "Good")
-            ET.SubElement(goodTag, "Good_Name").text = good
-            ET.SubElement(goodTag, "Good_Sector").text = good
+        # print("find")
+        # goodTag = goods.find('.//Good/Name[text="' + good + '"')
+        # if goodTag == None:
+        #     goodTag = ET.SubElement(goods, "Good")
+        #     ET.SubElement(goodTag, "Good_Name").text = good
+        #     ET.SubElement(goodTag, "Good_Sector").text = good
+        # else:
+        #     print("good tag is not none")
 
         # countriesTag = ET.SubElement(goodTag, )
         # ET.SubElement(goodTag, "Child_Labor").text = child_labor
@@ -318,7 +320,7 @@ def read_row(country, row, ws_idx):
                8: government_actions,
                9: deliberative_data,
                10: goods_list}
-    if ws_idx >= 1 and ws_idx <= len(options):
+    if ws_idx in options:
         options[ws_idx](country, row)
 
 
@@ -349,7 +351,6 @@ for idx, sheet in enumerate(wb.sheetnames):
     if sheet in skip:
         continue
     ws = wb[sheet]
-    print(sheet)
     for row in ws.iter_rows(min_row=2, values_only=True):
         country_name = row[1]
         country = country_exists(country_name)
@@ -364,3 +365,7 @@ for idx, sheet in enumerate(wb.sheetnames):
 countries[:] = sorted(countries, key=getkey)
 indent(countries)
 countries_tree.write(COUNTRIES_OUTPUT_FILE)
+
+goods[:] = sorted(goods, key=getkey)
+indent(goods)
+goods_tree.write(GOODS_OUTPUT_FILE)
