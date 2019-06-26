@@ -32,9 +32,11 @@ def check_multiple_territories(country, related_entity):
         territories.text = "No"
 
 def country_profiles(country, row):
-    advancement_lvl = row[2]
-    description = row[4]
+    region = row[2]
+    advancement_lvl = row[4]
+    description = row[6]
 
+    ET.SubElement(country, "Region").text = region
     ET.SubElement(country, "Advancement_Level").text = advancement_lvl
     ET.SubElement(country, "Description").text = description.strip()
 
@@ -46,11 +48,11 @@ def statistics_on_children(country, row):
 
     regex = r"(^\d+(,\d+)*(\.\d+(e\d+)?)?)(\s\((\d+(,\d+)*(\.\d+(e\d+)?)?)\))?$"
 
-    stat_type = row[2]
-    sector = row[3]
-    age = row[4]
-    percent = row[5]
-    related_entity = row[6]
+    related_entity = row[2]
+    stat_type = row[3]
+    sector = row[4]
+    age = row[5]
+    percent = row[6]
     match = re.match(regex, str(percent))
 
     check_multiple_territories(country, related_entity)
@@ -103,8 +105,8 @@ def ratification_of_international(country, row):
     if conventions == None:
         conventions = ET.SubElement(country, "Conventions")
 
-    convention = row[2]
-    ratification = row[3]
+    convention = row[3]
+    ratification = row[4]
 
     tags = {"ILO C. 138, Minimum Age": "C_138_Ratified", "UN CRC": "Convention_on_the_Rights_of_the_Child_Ratified",
             "ILO C. 182, Worst Forms of Child Labor": "C_182_Ratified",
@@ -125,10 +127,10 @@ def laws_and_regulations(country, row):
     if legal == None:
         legal = ET.SubElement(country, "Legal_Standards")
     
-    standard = row[2]
-    meets_intl_stds = row[4]
-    age = row[6]
-    calced_age = "Yes" if row[7] == "TRUE" else "No"
+    standard = row[3]
+    meets_intl_stds = row[5]
+    age = row[7]
+    calced_age = "Yes" if row[8] == "TRUE" else "No"
 
     tags = {
             "Compulsory Education Age": "Compulsory_Education",
@@ -159,9 +161,9 @@ def labor_law_enforcement(country, row):
     if enforcements == None:
         enforcements = ET.SubElement(country, "Enforcements")
 
-    overview = row[2]
-    sub_overview = row[3]
-    current_year_data = row[4]
+    overview = row[3]
+    sub_overview = row[4]
+    current_year_data = row[5]
 
     tags = {
         "Labor Inspectorate Funding":"Labor_Funding",
@@ -202,9 +204,9 @@ def criminal_law_enforcement(country, row):
     if enforcements == None:
         enforcements = ET.SubElement(country, "Enforcements")
 
-    overview = row[2]
-    sub_overview = row[3]
-    current_year_data = row[4]
+    overview = row[3]
+    sub_overview = row[4]
+    current_year_data = row[5]
 
     tags = {
         "Number of Investigations":"Criminal_Investigations",
@@ -231,8 +233,8 @@ def government_actions(country, row):
     if actions == None:
         actions = ET.SubElement(country, "Suggested_Actions")
 
-    area = row[2]
-    action = row[3]
+    area = row[3]
+    action = row[4]
 
     tags = {
         "Legal Framework":"Legal_Framework",
@@ -256,8 +258,8 @@ def deliberative_data(country, row):
     if mechanisms == None:
         mechanisms = ET.SubElement(country, "Mechanisms")
 
-    yes_no_na = row[2]
-    program = row[3]
+    yes_no_na = row[3]
+    program = row[4]
 
     tags = {
         "Does the government have a program to combat child labor?":"Program",
@@ -271,12 +273,12 @@ def deliberative_data(country, row):
 def read_row(country, row, ws_idx):
     options = {1: country_profiles,
                2: statistics_on_children,
-               3: ratification_of_international,
-               4: laws_and_regulations,
-               5: labor_law_enforcement,
-               6: criminal_law_enforcement,
-               7: government_actions,
-               8: deliberative_data}
+               4: ratification_of_international,
+               5: laws_and_regulations,
+               6: labor_law_enforcement,
+               7: criminal_law_enforcement,
+               8: government_actions,
+               9: deliberative_data}
     if ws_idx >= 1 and ws_idx <= len(options):
         options[ws_idx](country, row)
 
@@ -301,8 +303,11 @@ def indent(elem, level=0):
             elem.tail = i
 
 
+
+skip = ["Instructions", "2.Overview of Children’s "]
+
 for idx, sheet in enumerate(wb.sheetnames):
-    if sheet == "Instructions":
+    if sheet in skip:
         continue
     ws = wb[sheet]
     for row in ws.iter_rows(min_row=2, values_only=True):
