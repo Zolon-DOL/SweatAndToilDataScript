@@ -41,6 +41,44 @@ def country_profiles(country, row):
     ET.SubElement(country, "Description").text = description.strip()
 
 
+def goods_list(country, row):
+    good = row[2]
+    child_labor = "Yes" if row[3] == "1" else "No"
+    forced_labor = "Yes" if row[4] == "1" else "No"
+    forced_child_labor = "Yes" if row[5] == "1" else "No"
+
+    sectors = { "manu": "Manufacturing",
+                "mine": "Mining",
+                "agri": "Agriculture",
+                "other": "Other"}
+    sector = sectors[row[6]] if row[6] in sectors else ""
+
+    if sector:
+        # countries.xml
+        goodsTag = country.find("Goods")
+        if goodsTag == None:
+            goodsTag = ET.SubElement(country, "Goods")
+        
+        goodTag = ET.SubElement(goodsTag, "Good")
+        ET.SubElement(goodTag, "Good_Name").text = good
+        ET.SubElement(goodTag, "Child_Labor").text = child_labor
+        ET.SubElement(goodTag, "Forced_Labor").text = forced_labor
+        ET.SubElement(goodTag, "Forced_Child_Labor").text = forced_child_labor
+
+        # goods.xml
+        goodTag = goods.find('.//Good/Name[text="' + good + '"')
+        if goodTag == None:
+            goodTag = ET.SubElement(goods, "Good")
+            ET.SubElement(goodTag, "Good_Name").text = good
+            ET.SubElement(goodTag, "Good_Sector").text = good
+
+        # countriesTag = ET.SubElement(goodTag, )
+        # ET.SubElement(goodTag, "Child_Labor").text = child_labor
+        # ET.SubElement(goodTag, "Forced_Labor").text = forced_labor
+        # ET.SubElement(goodTag, "Forced_Child_Labor").text = forced_child_labor
+        
+
+
 def statistics_on_children(country, row):
     stats = country.find("Country_Statistics")
     if stats == None:
@@ -258,8 +296,8 @@ def deliberative_data(country, row):
     if mechanisms == None:
         mechanisms = ET.SubElement(country, "Mechanisms")
 
-    yes_no_na = row[3]
-    program = row[4]
+    yes_no_na = row[2]
+    program = row[3]
 
     tags = {
         "Does the government have a program to combat child labor?":"Program",
@@ -278,7 +316,8 @@ def read_row(country, row, ws_idx):
                6: labor_law_enforcement,
                7: criminal_law_enforcement,
                8: government_actions,
-               9: deliberative_data}
+               9: deliberative_data,
+               10: goods_list}
     if ws_idx >= 1 and ws_idx <= len(options):
         options[ws_idx](country, row)
 
@@ -310,6 +349,7 @@ for idx, sheet in enumerate(wb.sheetnames):
     if sheet in skip:
         continue
     ws = wb[sheet]
+    print(sheet)
     for row in ws.iter_rows(min_row=2, values_only=True):
         country_name = row[1]
         country = country_exists(country_name)
