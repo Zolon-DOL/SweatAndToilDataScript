@@ -200,7 +200,6 @@ def laws_and_regulations(country, row):
 
     if standard and tags[standard]:
         tag = ET.SubElement(legal, tags[standard])
-        ET.SubElement(tag, "Standard") # TODO get clarification about this tag
         ET.SubElement(tag, "Age").text = age
         ET.SubElement(tag, "Calculated_Age").text = calced_age
         ET.SubElement(tag, "Conforms_To_Intl_Standard").text = meets_intl_stds
@@ -367,7 +366,7 @@ for idx, sheet in enumerate(wb.sheetnames):
     for row in ws.iter_rows(min_row=2, values_only=True):
         country_name = row[1]
         country = country_exists(country_name)
-        if country == None:
+        if country == None and country_name:
             country = ET.SubElement(countries, "Country")
             name = ET.SubElement(country, "Name")
             name.text = country_name
