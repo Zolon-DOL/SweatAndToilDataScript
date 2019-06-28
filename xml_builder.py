@@ -37,8 +37,12 @@ def country_profiles(country, row):
     description = row[6]
 
     ET.SubElement(country, "Region").text = region
+    ET.SubElement(country, "Multiple_Territories")
     ET.SubElement(country, "Advancement_Level").text = advancement_lvl
     ET.SubElement(country, "Description").text = description.strip()
+
+    # create these tags now to be used in later sheets
+    ET.SubElement(country, "Goods")
 
 
 def goods_list(country, row):
