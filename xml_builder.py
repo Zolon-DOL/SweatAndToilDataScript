@@ -359,6 +359,12 @@ def indent(elem, level=0):
         if level and (not elem.tail or not elem.tail.strip()):
             elem.tail = i
 
+sanitize_re = re.compile(r"\(|\)|,|the")
+def sanitize(str):
+    str = re.sub(sanitize_re, "", str)
+    str = str.replace("  ", " ")
+    str = str.lower().replace(" ", "-")
+    return str
 
 
 skip = ["Instructions", "2.Overview of Children’s "]
@@ -374,6 +380,7 @@ for idx, sheet in enumerate(wb.sheetnames):
             country = ET.SubElement(countries, "Country")
             name = ET.SubElement(country, "Name")
             name.text = country_name
+            ET.SubElement(country, "Webpage").text = "https://www.dol.gov/agencies/ilab/resources/reports/child-labor/" + sanitize(country_name)
 
         read_row(country, row, idx)
 
