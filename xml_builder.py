@@ -4,6 +4,7 @@ import re
 
 COUNTRIES_OUTPUT_FILE = "countries_output.xml"
 GOODS_OUTPUT_FILE = "goods_output.xml"
+year = "2018"
 
 wb = load_workbook('master_data.xlsx')
 
@@ -120,6 +121,7 @@ def statistics_on_children(country, row):
     percent = row[6]
     match = re.match(regex, str(percent))
 
+    age_range = age.replace("to", "-").replace(" ", "") if age else ""
     group = match.group(1) if match else ""
     percentage = str(round(float(group) / 100, 3)
                      ) if is_number(group) else "Unavailable"
@@ -132,11 +134,15 @@ def statistics_on_children(country, row):
             child_work = ET.SubElement(stats, "Children_Work_Statistics")
 
         if stat_type == "Working (% and population)":
-            ET.SubElement(child_work, "Age_Range").text = age
+            total_work_pop = match.group(6) if match else ""
+            if total_work_pop:
+                total_work_pop = total_work_pop.replace(",", "")
+            
+            ET.SubElement(child_work, "Age_Range").text = age_range
             ET.SubElement(
                 child_work, "Total_Percentage_of_Working_Children").text = percentage
             ET.SubElement(
-                child_work, "Total_Working_Population").text = match.group(6) if match else ""
+                child_work, "Total_Working_Population").text = total_work_pop
         elif stat_type == "Working children by sector" and sector:
             ET.SubElement(child_work, sector).text = percentage
     elif stat_type == "Attending School (%)":
@@ -145,7 +151,7 @@ def statistics_on_children(country, row):
             education = ET.SubElement(
                 stats, "Education_Statistics_Attendance_Statistics")
 
-        ET.SubElement(education, "Age_Range").text = age
+        ET.SubElement(education, "Age_Range").text = age_range
         ET.SubElement(
             education, "Percentage").text = percentage
     elif stat_type == "Combining Work and School (%)":
@@ -155,7 +161,7 @@ def statistics_on_children(country, row):
             work_and_school = ET.SubElement(
                 stats, "Children_Working_and_Studying_7-14_yrs_old")
 
-        ET.SubElement(work_and_school, "Age_Range").text = age
+        ET.SubElement(work_and_school, "Age_Range").text = age_range
         ET.SubElement(
             work_and_school, "Total").text = percentage
     elif stat_type == "Primary Completion Rate (%)":
@@ -400,7 +406,8 @@ def read_row(country, row, ws_idx):
                9: deliberative_data,
                10: goods_list}
     if ws_idx in options:
-        options[ws_idx](country, row)
+        if str(row[0]) == year:
+            options[ws_idx](country, row)
 
 
 def get_countries_key(elem):
