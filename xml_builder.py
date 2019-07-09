@@ -4,8 +4,6 @@ import re
 
 COUNTRIES_OUTPUT_FILE = "countries_output.xml"
 GOODS_OUTPUT_FILE = "goods_output.xml"
-year = "2018"
-
 wb = load_workbook('master_data.xlsx')
 
 countries = ET.Element("Countries")
@@ -14,12 +12,14 @@ countries_tree = ET.ElementTree(countries)
 goods = ET.Element("Goods")
 goods_tree = ET.ElementTree(goods)
 
+year = "2018"
 country_display_names = {
         "RS": "Republika Srpska",
         "FBiH": "Federation of Bosnia and Herzegovina",
         "BD": "Brčko District",
         "BiH": "Bosnia and Herzegovina"
     }
+multi_territory_countries = ["Tanzania", "Pakistan", "Somalia", "Iraq", "Bosnia and Herzegovina"]
 
 
 def country_exists(country_name):
@@ -34,8 +34,10 @@ def check_multiple_territories(country, related_entity):
     territories = country.find("Multiple_Territories")
     if territories == None:
         territories = ET.SubElement(country, "Multiple_Territories")
+    
+    name = country.find("Name").text
 
-    if related_entity:
+    if name in multi_territory_countries:
         territories.text = "Yes"
     else:
         territories.text = "No"
@@ -405,6 +407,7 @@ def read_row(country, row, ws_idx):
                8: government_actions,
                9: deliberative_data,
                10: goods_list}
+
     if ws_idx in options:
         if str(row[0]) == year:
             options[ws_idx](country, row)
