@@ -409,7 +409,7 @@ def read_row(country, row, ws_idx):
                10: goods_list}
 
     if ws_idx in options:
-        if str(row[0]) == year:
+        if ws_idx == 10 or str(row[0]) == year:
             options[ws_idx](country, row)
 
 
