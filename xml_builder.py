@@ -34,7 +34,7 @@ def check_multiple_territories(country, related_entity):
     territories = country.find("Multiple_Territories")
     if territories == None:
         territories = ET.SubElement(country, "Multiple_Territories")
-    
+
     name = country.find("Name").text
 
     if name in multi_territory_countries:
@@ -139,7 +139,7 @@ def statistics_on_children(country, row):
             total_work_pop = match.group(6) if match else ""
             if total_work_pop:
                 total_work_pop = total_work_pop.replace(",", "")
-            
+
             ET.SubElement(child_work, "Age_Range").text = age_range
             ET.SubElement(
                 child_work, "Total_Percentage_of_Working_Children").text = percentage
@@ -325,7 +325,8 @@ def criminal_law_enforcement(country, row):
             {"NA": "Criminal_New_Employee_Training",
              "Training on New Laws Related to the Worst Forms of Child Labor": "Criminal_New_Law_Training",
              "Refresher Courses Provided": "Criminal_Refresher_Courses"},
-        "Reciprocal Referral Mechanism Exists Between Criminal Authorities and Social Services": "Criminal_Referral_Mechanism"
+        "Reciprocal Referral Mechanism Exists Between Criminal Authorities and Social Services": "Criminal_Referral_Mechanism",
+        "Imposed Penalties for Violations Related to The Worst Forms of Child Labor": "Imposed_penalties_for_violations_related_to_the_WFCL"
     }
 
     if overview and overview in tags:
