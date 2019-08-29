@@ -98,18 +98,20 @@ def country_profiles(country, row):
     elementTree.SubElement(country, 'Goods')
 
 
+
 def goods_list(country, row):
     data = transform_data_to_list(row)
     good = data[2]
+    comp_data = '1'
 
     child_labor, forced_labor, forced_child_labor = 'No', 'No', 'No'
     labor_type = {0: child_labor, 1: forced_labor, 2: forced_child_labor}
     for labor_index, value in enumerate(data[3:6]):
-        if value == 1:
+        if value == str(comp_data):
             labor_type[labor_index] = 'Yes'
-    child_labor = 'Yes' if data[3] == 1 else 'No'
-    forced_labor = 'Yes' if data[4] == 1 else 'No'
-    forced_child_labor = 'Yes' if data[5] == 1 else 'No'
+    child_labor = 'Yes' if data[3] == str(comp_data) else 'No'
+    forced_labor = 'Yes' if data[4] == str(comp_data) else 'No'
+    forced_child_labor = 'Yes' if data[5] == str(comp_data) else 'No'
 
     sectors = {'manu': 'Manufacturing',
                'mine': 'Mining',
@@ -117,7 +119,7 @@ def goods_list(country, row):
                'other': 'Other'}
     sector = sectors[data[6]] if data[6] in sectors else ''
     if sector:
-        # countries.xml
+                # countries.xml
         goods_tag = country.find('Goods')
         if goods_tag is None:
             goods_tag = elementTree.SubElement(country, 'Goods')
